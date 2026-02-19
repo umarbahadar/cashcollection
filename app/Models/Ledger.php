@@ -31,4 +31,7 @@ class Ledger extends Model
     {
         return $this->belongsTo(Account::class);
     }
+
+
+    
 }

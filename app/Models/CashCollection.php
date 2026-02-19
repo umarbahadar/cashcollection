@@ -24,4 +24,7 @@ class CashCollection extends Model
     {
         return $this->hasMany(Ledger::class);
     }
+
+
+    
 }

@@ -24,17 +24,47 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+    
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+    
+            // Role-based redirection
+            $user = Auth::user();
 
-        $request->session()->regenerate();
+            if ($user->role_id == 1) {
+                return redirect()->route('dashboard');
+            } elseif ($user->role_id == 2) {
+                return redirect()->route('agent');
+            } else {
+                return redirect()->route('home');
+            }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        }
+    
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ]);
     }
 
     /**
      * Destroy an authenticated session.
      */
     public function destroy(Request $request): RedirectResponse
+    {
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
+
+    public function logout(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
 
